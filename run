@@ -1,0 +1,4 @@
+shell.run("pastebin", "get", "CGCAFXEg", "DCMServer")
+shell.run("pastebin", "get", "JFg7wF6e", "ops")
+shell.run("pastebin", "get", "GV2WpCjQ", "sessiondetail")
+os.reboot()

@@ -1,0 +1,353 @@
+    -- De Chelonian Mobile v4 -- Client Install
+    -- 2013 Iain Strefford
+     
+    -- function declarations
+    function sethome()
+    print("running sethome")
+    print("Please enter new X Coord:")
+    local xcoord = tonumber(io.read())
+    print("Please enter new Y Coord:")
+    local ycoord  = tonumber(io.read())
+    print("Please enter new Z Coord:")
+    local zcoord  = tonumber(io.read())
+    print("Please enter new Heading:")
+    local hcoord  = tonumber(io.read())
+    local coords = {xcoord, ycoord, zcoord, hcoord}
+    sndmsg("sethome", "I")
+    local xsrc, xmsg = getmsg()
+            if xmsg == "ready" then
+            print("sending coords", coords)
+            sndmsg(coords, "C")
+            --local ready = true
+            end
+    pcall(reporthome)
+    os.sleep(5)
+    end
+     
+    function reportparam()
+    sndmsg("reportparam", "I")
+    end
+     
+    function moveto()
+    print("running moveto")
+    print("Please enter X Coord:")
+    local xcoord = tonumber(io.read())
+    print("Please enter Y Coord:")
+    local ycoord  = tonumber(io.read())
+    print("Please enter Z Coord:")
+    local zcoord  = tonumber(io.read())
+    print("Please enter Heading:")
+    local hcoord  = tonumber(io.read())
+    local coords = {xcoord, ycoord, zcoord, hcoord}
+    sndmsg("moveto", "I")
+    local xsrc, xmsg = getmsg()
+            if xmsg == "ready" then
+            print("sending coords", coords)
+            sndmsg(coords, "C")
+            local ready = true
+            end
+    end
+     
+    function gohome()
+    sndmsg("gohome", "I")
+    end
+     
+    function reportfuel()
+    sndmsg("reportfuel", "I")
+    local xsource, xmsg, xclass = getmsg()
+    tfuel = xmsg
+    return xmsg
+    end
+     
+     
+    function sndmsg(smsg, class)
+    print("sending message")
+    os.sleep(1)
+    zArgs = {source, id, smsg, class}
+    xargs = textutils.serialize(zArgs)
+    rednet.send(tonumber(relay), xargs)
+    end
+     
+    function getmsg()
+    local me = os.getComputerID()
+    local forme = false
+    while forme == false do
+    local xid, xmsg = rednet.receive()
+    local xsub = string.sub(xmsg,1,1)
+            if xsub == "{" then
+    fmsg = textutils.unserialize(xmsg)
+            ysrc = fmsg[1]
+            yid = fmsg[2]
+            ymsg = fmsg[3]
+            yclass = fmsg[4]
+                    if tonumber(yid) == tonumber(me) then
+                    forme = true
+                    else
+                    end
+            end
+    end
+    return ysrc, ymsg, yclass
+    end
+     
+    function tellpos()
+    sndmsg("tellpos", "I")
+    zid, zmsg, zclass = getmsg()
+    tlocation = zmsg
+    return zmsg
+    end
+     
+    function setsite()
+    print("running setsite")
+    print("Please enter new X Coord:")
+    local xcoord = tonumber(io.read())
+    print("Please enter new Y Coord:")
+    local ycoord  = tonumber(io.read())
+    print("Please enter new Z Coord:")
+    local zcoord  = tonumber(io.read())
+    print("Please enter new Heading:")
+    local hcoord  = tonumber(io.read())
+    local coords = {xcoord, ycoord, zcoord, hcoord}
+    sndmsg("setsite", coords)
+    os.sleep(5)
+    end
+     
+    function reportsite()
+    sndmsg("reportsite", "I")
+    local xsrc, xsite,  xclass = getmsg()
+    tsite = xsite
+    --print("response: ", textutils.serialize(xsite))
+    return xsite
+    end
+     
+    function gotosite()
+    sndmsg("gotosite", "I")
+    end
+     
+    function engage()
+    sndmsg("engage", "I")
+    end
+     
+    function refuel()
+    sndmsg("refuel", "I")
+    end
+     
+    function shaft()
+    sndmsg("shaft", "I")
+    end
+     
+    function homehere()
+    sndmsg("homehere", "I")
+    end
+     
+    function CUI(m)
+    n=1
+    l=#m
+    while true do
+    term.clear()
+    term.setCursorPos(1,2)
+    print("Controlling Turtle ", id, " via Relay ", relay)
+    for i=1, l, 1 do
+    if i==n then print(i, " ["..m[i].."]") else print(i, " ", m[i]) end
+    end
+    print("Select a number[arrow up/arrow down]")
+    a, b= os.pullEventRaw()
+    if a == "key" then
+    if b==200 and n>1 then n=n-1 end
+    if b==208 and n<=l then n=n+1 end
+    if b==28 then break end
+    end
+    end
+    term.clear() term.setCursorPos(1,1)
+    return n
+    end
+     
+    function treboot()
+    sndmsg("reboot", "I")
+    end
+     
+    function unload()
+    sndmsg("unload", "I")
+    end
+     
+    function setheight()
+    print("Please enter new Travel Height:")
+    local xtheight  = tonumber(io.read())
+    sndmsg("setheight", xtheight)
+     end
+     
+    function esize()
+    print("Please enter new Excavate Size:")
+    local xesize  = tonumber(io.read())
+    sndmsg("esize", xesize)
+    end
+     
+    function setoffset()
+    print("Please enter new Offset:")
+    local xoffset  = tonumber(io.read())
+    sndmsg("setoffset", xoffset)
+    end
+     
+    function setrepeats()
+    print("How many times to repeat Excavate:")
+    local xrepeats  = tonumber(io.read())
+    sndmsg("repeats", xrepeats)
+    end
+	
+	function setrelay()
+    print("Set Relay to use *Caution!*:")
+    local xrelay  = tonumber(io.read())
+    sndmsg("relay", xrelay)
+    end
+     
+	function setmonitor()
+    print("Set Monitor to use:")
+    local xmonitor  = tonumber(io.read())
+    sndmsg("monitor", xmonitor)
+    end
+	
+    function punch()
+    sndmsg("punch", "I")
+    end
+     
+     
+     
+    function turtleinit()
+	sndmsg("init", "I")
+    end
+     
+     
+    function mainmenu()
+    local options={
+    "Initialise",
+    "Move Menu",
+    "engage",
+    "Refuel",
+    "Unload",
+    "Reboot Turtle",
+    "Set Parameters",
+    "Exit",
+    }
+    local n=CUI(options)
+    return(n)
+    end
+     
+    function turtlemenu()
+    while true do
+     choice = mainmenu(n)
+            print("choice:", choice)
+            if choice == 1 then
+                    pcall(turtleinit)
+                    elseif choice == 2 then
+                    pcall(submenumove)
+                    elseif choice == 3 then
+                    pcall(engage)
+                    elseif choice == 4 then
+                    pcall(refuel)
+                    elseif choice == 5 then
+                    pcall(unload)
+                    elseif choice == 6 then
+                    pcall(treboot)
+                    elseif choice == 7 then
+                    pcall(submenuparam)
+                    elseif choice == 8 then
+                    break
+                    else
+            end
+    end
+    end
+     
+    function submenuparameters()
+    local options={
+    "Set Home",
+    "Set Site",
+    "Set Excavation Size",
+    "Set Travel Height",
+    "Set Repeats",
+    "Set Home in Current Position",
+    "Set Offset",
+	"Set Relay",
+	"Set Monitor",
+    "Main Menu"
+    }
+    local n=CUI(options)
+    return(n)
+    end
+     
+    function submenuparam()
+    while true do
+    choice = submenuparameters(n)
+    print("Choice:", choice)
+            if choice == 1 then
+            pcall(sethome)
+            elseif choice == 2 then
+            pcall(setsite)
+            elseif choice == 3 then
+            pcall(esize)
+            elseif choice == 4 then
+            pcall(setheight)
+            elseif choice == 5 then
+            pcall(setrepeats)
+            elseif choice == 6 then
+            pcall(homehere)
+            elseif choice == 7 then
+            pcall(setoffset)
+			elseif choice == 8 then
+            pcall(setrelay)
+			elseif choice == 9 then
+            pcall(setmonitor)
+            elseif choice == 10 then
+            break
+    end
+    end
+    end
+     
+    function submenumoveoptions()
+    local options={
+    "Go Home",
+    "Go to Site",
+    "Go to Coords",
+    "Dig Shaft at Site",
+    "Punch Up",
+    "Main Menu"
+    }
+    local n=CUI(options)
+    return(n)
+    end
+     
+    function submenumove()
+    while true do
+    choice = submenumoveoptions(n)
+    print("Choice:", choice)
+            if choice == 1 then
+            pcall(gohome)
+            break
+            elseif choice == 2 then
+            pcall(gotosite)
+            break
+            elseif choice == 3 then
+            pcall(moveto)
+            break
+            elseif choice == 4 then
+            pcall(shaft)
+            break
+            elseif choice == 5 then
+            pcall(punch)
+            break
+            elseif choice == 6 then
+            break
+    end
+    end
+    end
+     
+     
+     
+    -- MAIN FUNCTION START
+    -- code execute start
+    --open modem
+    rednet.open("right")
+    term.clear()
+    tArgs = {...}
+    relay = tArgs[1]
+    id = tArgs[2]
+    source = tonumber(os.getComputerID()) -- get terminal number as tsource
+    turtlemenu()

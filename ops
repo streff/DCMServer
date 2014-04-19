@@ -1,0 +1,285 @@
+    -- variables
+    -- local:
+    --     syschoice  - functions: main, farmOps, sysOps
+     
+    -- industrial_system Functions - siteOps, farmOps
+    local function open()
+            local bOpen, sFreeSide = false, nil
+            for n,sSide in pairs(rs.getSides()) do 
+                    if peripheral.getType( sSide ) == "modem" then
+                            sFreeSide = sSide
+                            if rednet.isOpen( sSide ) then
+                                    bOpen = true
+                                    break
+                            end
+                    end
+            end
+           
+            if not bOpen then
+                    if sFreeSide then
+                            print( "Opening "..sFreeSide.." modem" )
+                            rednet.open( sFreeSide )
+                            return true
+                    else
+                            print( "No modem attached" )
+                            return false
+                    end
+            end
+            return true
+    end
+     
+    function sessioninfo()
+    print("How Many Turtles?")
+    local numturt = tonumber(io.read()) -- get number of turtles
+    roster = {}
+    for n = 1, numturt do
+           
+            print("Please enter Turtle ID:")
+            local tid = tonumber(io.read()) -- get turtle number as tid
+            roster[n] = tid
+    end
+    print("Please enter RelayID: ")
+    trelay = tonumber(io.read()) -- get relay number as trelay
+    writesession()
+    return tsource, tid, trelay -- return global variables for comms control to main function
+    end
+     
+    function writesession()
+    local xsession = {trelay, roster}
+    file = fs.open("sessiondetail", "w")
+    file.write(textutils.serialize(xsession))
+    file:close()
+    end
+     
+    function readsession()
+    file = fs.open("sessiondetail", "r")
+    local xsession = textutils.unserialize(file.readLine())
+    file:close()
+    local xtrelay = xsession[1]
+    local xroster = xsession[2]
+    relay = xtrelay
+    roster = xroster
+    end
+     
+    function siteOps()
+    while true do
+    term.clear()
+     
+    status = rs.getBundledOutput("bottom")
+    drive = status
+     
+    print("Machines On: ", colors.test(status, colors.yellow))
+    print("Ore Feed On: ", colors.test(status, colors.lime))
+    print("X-Feed On: ", colors.test(status, colors.red))
+    print("Turtle Power On: ", colors.test(status, colors.white))
+    print("Reactor #1 On: ", colors.test(status, colors.orange))
+    print [[
+    Please select your required system:
+    ------------------------------------
+    1 - Foundry - Toggle Spin Up
+    2 - Foundry - Toggle Feed
+    3 - Power - Toggle MFSU X-feed
+    4 - Power - Toggle Turtle Feed
+    5 - Power - Toggle Reactor #1
+    0 - Exit
+    ------------------------------------
+    ]]
+     
+    local syschoice = io.read()
+    if syschoice == "1" then
+    if colors.test(status, colors.yellow) then
+    drive = status - 16
+    else
+    drive = status + 16
+    end
+    rs.setBundledOutput("bottom", drive)
+    os.sleep(1)
+    elseif syschoice == "2" then
+    if colors.test(status, colors.lime) then
+    drive = status - 32
+    else
+    drive = status + 32
+    end
+    rs.setBundledOutput("bottom", drive)
+    os.sleep(1)
+    elseif syschoice == "3" then
+    if colors.test(status, colors.red) then
+    drive = status - 16384
+    else
+    drive = status + 16384
+    end
+    rs.setBundledOutput("bottom", drive)
+    os.sleep(1)
+    elseif syschoice == "4" then
+    if colors.test(status, colors.white) then
+    drive = status - 1
+    else
+    drive = status + 1
+    end
+    rs.setBundledOutput("bottom", drive)
+    os.sleep(1)
+    elseif syschoice == "5" then
+    if colors.test(status, colors.orange) then
+    drive = status - 2
+    else
+    drive = status + 2
+    end
+    rs.setBundledOutput("bottom", drive)
+    os.sleep(1)
+    elseif syschoice == "0" then
+    return false
+    else
+    print("Input error")
+    os.sleep(1)
+    end
+    end
+    end
+     
+    function farmOps()
+    while true do
+    print [[
+    Please select your required system:
+    ------------------------------------
+    1 - 
+    ...
+    0 - Exit
+    ------------------------------------
+    ]]
+    local syschoice = io.read()
+    if syschoice == "1" then
+    
+   
+    term.clear()
+    elseif syschoice == "0" then
+    term.clear()
+    return false
+    else
+    print("Input error")
+    os.sleep(1)
+    end
+    end
+    end
+     
+    function monitor()
+    print("Which Monitor do you want to assign?")
+    mon = tonumber(io.read())
+    print("Which Turtle do you wish to monitor?")
+    local xturtle = tonumber(io.read())
+    turtle = roster[xturtle]
+    local tArgs = {source, mon, turtle, "MON"}
+    rednet.send(mon, textutils.serialize(tArgs))
+    end
+     
+    function remon()
+    print("Which Monitor do you want to Re-assign?")
+    mon = tonumber(io.read())
+    print("Which Turtle are you currently monitoring?")
+    local zsource = tonumber(io.read())
+    xsource = roster[zsource]
+    print("Which Turtle would you like to monitor?")
+    zterm = tonumber(io.read())
+    xterm = roster[zterm]
+    local tArgs = {xsource, mon, xterm, "MON"}
+    rednet.send(mon, textutils.serialize(tArgs))
+    print(textutils.serialize(tArgs))
+    end
+     
+    function breakmon()
+    print("Which Monitor do you want to Reset?")
+    mon = tonumber(io.read())
+    print("Which Turtle are you currently monitoring?")
+    local zsource = tonumber(io.read())
+    xsource = roster[zsource]
+    local tArgs = {xsource, mon, "null", "MOX"}
+    rednet.send(mon, textutils.serialize(tArgs))
+    end
+     
+    function miningops()
+    readsession()
+    --choose subsystem
+    print [[
+    Please select your required system:
+    ------------------------------------
+    1 - Control Turtle
+    2 - Initialise Monitor
+    3 - ReAssign Monitor
+    4 - Break Monitor Connection
+    5 - Set Session Info
+    0 - Exit
+    ------------------------------------
+    ]]
+    local syschoice = io.read()
+    if syschoice == "1" then
+    term.clear()
+    print("Which turtle would you like?")
+    local xturtle = tonumber(io.read())
+    turtle = roster[xturtle]
+    shell.run("DCMServer", relay, turtle)
+    pcall(miningOps)
+    elseif syschoice == "2" then
+    term.clear()
+    monitor()
+    pcall(miningops)
+    elseif syschoice == "3" then
+    term.clear()
+    remon()
+    elseif syschoice == "4" then
+    term.clear()
+    breakmon()
+    elseif syschoice == "5" then
+    term.clear()
+    sessioninfo()
+    elseif syschoice == "0" then
+    term.clear()
+    pcall(main)
+    else
+    print("Input error")
+    os.sleep(1)
+    pcall(miningOps)
+    end
+     
+    end
+     
+    -- Main Menu
+    function main()
+    term.clear()
+    print [[
+    "StreffCorp Industrial Control Program v2"
+    Main Menu
+     
+    Please select your required system:
+    ------------------------------------
+    1 - Site Ops
+    2 - Farm Ops
+    3 - Mining Ops
+    0 - Exit
+    ------------------------------------
+    ]]
+    --choose system -site -farm ops
+    local syschoice = io.read()
+    if syschoice == "1" then
+    term.clear()
+    pcall(siteOps)
+    elseif syschoice == "2" then
+    term.clear()
+    pcall(farmOps)
+    elseif syschoice == "3" then
+    term.clear()
+    pcall(miningops)
+    elseif syschoice == "0" then
+    term.clear()
+    shell.exit()
+    os.reboot()
+    else
+    term.clear()
+    print("Input error")
+    os.sleep(1)
+    pcall(main)
+    end
+    end
+     
+    -- call main menu
+    open()
+    while true do
+    main()
+    end
